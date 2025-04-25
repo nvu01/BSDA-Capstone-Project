@@ -1,0 +1,12 @@
+*
+!.gitignore
+!b_variables.json
+!dp_variables.json
+!s_variables.json
+!data_extraction_&_data_wrangling.ipynb
+!main_analysis.ipynb
+!model_refinement_experiments.ipynb
+!retrieving_variable_codes.ipynb
+!README.md
+!Capstone_Proposal.pdf
+!Capstone_Report.pdf
