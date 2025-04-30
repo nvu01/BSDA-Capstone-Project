@@ -1,4 +1,7 @@
+# Ignore everything
 *
+
+# Keep the following
 !.gitignore
 !b_variables.json
 !dp_variables.json
@@ -10,3 +13,5 @@
 !README.md
 !Capstone_Proposal.pdf
 !Capstone_Report.pdf
+!html-format/
+!html-format/*
