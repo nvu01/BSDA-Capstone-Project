@@ -7332,7 +7332,12 @@ a.anchor-link {
     if (!diagrams.length) {
       return;
     }
-    const mermaid = (await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.esm.min.mjs")).default;
+    const mermaid = (await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.0/mermaid.esm.min.mjs")).default;
+    const elkUrl = "https://cdnjs.cloudflare.com/ajax/libs/mermaid-layout-elk/0.1.9/mermaid-layout-elk.esm.min.mjs";
+    if(elkUrl) {
+      const elkLayouts = (await import(elkUrl)).default;
+      mermaid.registerLayoutLoaders(elkLayouts);
+    }
     const parser = new DOMParser();
 
     mermaid.initialize({
@@ -7429,7 +7434,8 @@ a.anchor-link {
      * Post-process to ensure mermaid diagrams contain only valid SVG and XHTML.
      */
     function cleanMermaidSvg(svg) {
-      return svg.replace(RE_VOID_ELEMENT, replaceVoidElement);
+      svg = svg.replace(RE_VOID_ELEMENT, replaceVoidElement);
+      return `${SVG_XML_HEADER}${svg}`;
     }
 
 
@@ -7455,6 +7461,285 @@ a.anchor-link {
       }
       return `<${tag} ${rest}>`;
     }
+
+
+  /**
+   * Named HTML entities with their decimal equivalent codes.
+   *
+   * @see https://www.w3.org/TR/WD-html40-970708/sgml/entities.html
+   * */
+  const HTML_ENTITIES = `<!ENTITY Aacute "&#193;">
+<!ENTITY aacute "&#225;">
+<!ENTITY Acirc "&#194;">
+<!ENTITY acirc "&#226;">
+<!ENTITY acute "&#180;">
+<!ENTITY AElig "&#198;">
+<!ENTITY aelig "&#230;">
+<!ENTITY Agrave "&#192;">
+<!ENTITY agrave "&#224;">
+<!ENTITY alefsym "&#8501;">
+<!ENTITY Alpha "&#913;">
+<!ENTITY alpha "&#945;">
+<!ENTITY amp "&#38;">
+<!ENTITY and "&#8869;">
+<!ENTITY ang "&#8736;">
+<!ENTITY Aring "&#197;">
+<!ENTITY aring "&#229;">
+<!ENTITY asymp "&#8776;">
+<!ENTITY Atilde "&#195;">
+<!ENTITY atilde "&#227;">
+<!ENTITY Auml "&#196;">
+<!ENTITY auml "&#228;">
+<!ENTITY bdquo "&#8222;">
+<!ENTITY Beta "&#914;">
+<!ENTITY beta "&#946;">
+<!ENTITY brvbar "&#166;">
+<!ENTITY bull "&#8226;">
+<!ENTITY cap "&#8745;">
+<!ENTITY Ccedil "&#199;">
+<!ENTITY ccedil "&#231;">
+<!ENTITY cedil "&#184;">
+<!ENTITY cent "&#162;">
+<!ENTITY Chi "&#935;">
+<!ENTITY chi "&#967;">
+<!ENTITY circ "&#710;">
+<!ENTITY clubs "&#9827;">
+<!ENTITY cong "&#8773;">
+<!ENTITY copy "&#169;">
+<!ENTITY crarr "&#8629;">
+<!ENTITY cup "&#8746;">
+<!ENTITY curren "&#164;">
+<!ENTITY dagger "&#8224;">
+<!ENTITY Dagger "&#8225;">
+<!ENTITY darr "&#8595;">
+<!ENTITY dArr "&#8659;">
+<!ENTITY deg "&#176;">
+<!ENTITY Delta "&#916;">
+<!ENTITY delta "&#948;">
+<!ENTITY diams "&#9830;">
+<!ENTITY divide "&#247;">
+<!ENTITY Eacute "&#201;">
+<!ENTITY eacute "&#233;">
+<!ENTITY Ecirc "&#202;">
+<!ENTITY ecirc "&#234;">
+<!ENTITY Egrave "&#200;">
+<!ENTITY egrave "&#232;">
+<!ENTITY empty "&#8709;">
+<!ENTITY emsp "&#8195;">
+<!ENTITY ensp "&#8194;">
+<!ENTITY epsilon "&#949;">
+<!ENTITY Epsilon "&#917;">
+<!ENTITY equiv "&#8801;">
+<!ENTITY Eta "&#919;">
+<!ENTITY eta "&#951;">
+<!ENTITY ETH "&#208;">
+<!ENTITY eth "&#240;">
+<!ENTITY Euml "&#203;">
+<!ENTITY euml "&#235;">
+<!ENTITY exist "&#8707;">
+<!ENTITY fnof "&#402;">
+<!ENTITY forall "&#8704;">
+<!ENTITY frac12 "&#189;">
+<!ENTITY frac14 "&#188;">
+<!ENTITY frac34 "&#190;">
+<!ENTITY frasl "&#8260;">
+<!ENTITY Gamma "&#915;">
+<!ENTITY gamma "&#947;">
+<!ENTITY ge "&#8805;">
+<!ENTITY gt "&#62;">
+<!ENTITY harr "&#8596;">
+<!ENTITY hArr "&#8660;">
+<!ENTITY hearts "&#9829;">
+<!ENTITY hellip "&#8230;">
+<!ENTITY Iacute "&#205;">
+<!ENTITY iacute "&#237;">
+<!ENTITY Icirc "&#206;">
+<!ENTITY icirc "&#238;">
+<!ENTITY iexcl "&#161;">
+<!ENTITY Igrave "&#204;">
+<!ENTITY igrave "&#236;">
+<!ENTITY image "&#8465;">
+<!ENTITY infin "&#8734;">
+<!ENTITY int "&#8747;">
+<!ENTITY Iota "&#921;">
+<!ENTITY iota "&#953;">
+<!ENTITY iquest "&#191;">
+<!ENTITY isin "&#8712;">
+<!ENTITY Iuml "&#207;">
+<!ENTITY iuml "&#239;">
+<!ENTITY Kappa "&#922;">
+<!ENTITY kappa "&#954;">
+<!ENTITY Lambda "&#923;">
+<!ENTITY lambda "&#955;">
+<!ENTITY lang "&#9001;">
+<!ENTITY laquo "&#171;">
+<!ENTITY larr "&#8592;">
+<!ENTITY lArr "&#8656;">
+<!ENTITY lceil "&#8968;">
+<!ENTITY ldquo "&#8220;">
+<!ENTITY le "&#8804;">
+<!ENTITY lfloor "&#8970;">
+<!ENTITY lowast "&#8727;">
+<!ENTITY loz "&#9674;">
+<!ENTITY lrm "&#8206;">
+<!ENTITY lsaquo "&#8249;">
+<!ENTITY lsquo "&#8216;">
+<!ENTITY lt "&#60;">
+<!ENTITY macr "&#175;">
+<!ENTITY mdash "&#8212;">
+<!ENTITY micro "&#181;">
+<!ENTITY middot "&#183;">
+<!ENTITY minus "&#8722;">
+<!ENTITY Mu "&#924;">
+<!ENTITY mu "&#956;">
+<!ENTITY nabla "&#8711;">
+<!ENTITY nbsp "&#160;">
+<!ENTITY ndash "&#8211;">
+<!ENTITY ne "&#8800;">
+<!ENTITY ni "&#8715;">
+<!ENTITY not "&#172;">
+<!ENTITY notin "&#8713;">
+<!ENTITY nsub "&#8836;">
+<!ENTITY Ntilde "&#209;">
+<!ENTITY ntilde "&#241;">
+<!ENTITY Nu "&#925;">
+<!ENTITY nu "&#957;">
+<!ENTITY Oacute "&#211;">
+<!ENTITY oacute "&#243;">
+<!ENTITY Ocirc "&#212;">
+<!ENTITY ocirc "&#244;">
+<!ENTITY OElig "&#338;">
+<!ENTITY oelig "&#339;">
+<!ENTITY Ograve "&#210;">
+<!ENTITY ograve "&#242;">
+<!ENTITY oline "&#8254;">
+<!ENTITY Omega "&#937;">
+<!ENTITY omega "&#969;">
+<!ENTITY Omicron "&#927;">
+<!ENTITY omicron "&#959;">
+<!ENTITY oplus "&#8853;">
+<!ENTITY or "&#8870;">
+<!ENTITY ordf "&#170;">
+<!ENTITY ordm "&#186;">
+<!ENTITY Oslash "&#216;">
+<!ENTITY oslash "&#248;">
+<!ENTITY Otilde "&#213;">
+<!ENTITY otilde "&#245;">
+<!ENTITY otimes "&#8855;">
+<!ENTITY Ouml "&#214;">
+<!ENTITY ouml "&#246;">
+<!ENTITY para "&#182;">
+<!ENTITY part "&#8706;">
+<!ENTITY permil "&#8240;">
+<!ENTITY perp "&#8869;">
+<!ENTITY Phi "&#934;">
+<!ENTITY phi "&#966;">
+<!ENTITY Pi "&#928;">
+<!ENTITY pi "&#960;">
+<!ENTITY piv "&#982;">
+<!ENTITY plusmn "&#177;">
+<!ENTITY pound "&#163;">
+<!ENTITY prime "&#8242;">
+<!ENTITY Prime "&#8243;">
+<!ENTITY prod "&#8719;">
+<!ENTITY prop "&#8733;">
+<!ENTITY Psi "&#936;">
+<!ENTITY psi "&#968;">
+<!ENTITY quot "&#34;">
+<!ENTITY radic "&#8730;">
+<!ENTITY rang "&#9002;">
+<!ENTITY raquo "&#187;">
+<!ENTITY rarr "&#8594;">
+<!ENTITY rArr "&#8658;">
+<!ENTITY rceil "&#8969;">
+<!ENTITY rdquo "&#8221;">
+<!ENTITY real "&#8476;">
+<!ENTITY reg "&#174;">
+<!ENTITY rfloor "&#8971;">
+<!ENTITY Rho "&#929;">
+<!ENTITY rho "&#961;">
+<!ENTITY rlm "&#8207;">
+<!ENTITY rsaquo "&#8250;">
+<!ENTITY rsquo "&#8217;">
+<!ENTITY sbquo "&#8218;">
+<!ENTITY Scaron "&#352;">
+<!ENTITY scaron "&#353;">
+<!ENTITY sdot "&#8901;">
+<!ENTITY sect "&#167;">
+<!ENTITY shy "&#173;">
+<!ENTITY Sigma "&#931;">
+<!ENTITY sigma "&#963;">
+<!ENTITY sigmaf "&#962;">
+<!ENTITY sim "&#8764;">
+<!ENTITY spades "&#9824;">
+<!ENTITY sub "&#8834;">
+<!ENTITY sube "&#8838;">
+<!ENTITY sum "&#8721;">
+<!ENTITY sup "&#8835;">
+<!ENTITY sup1 "&#185;">
+<!ENTITY sup2 "&#178;">
+<!ENTITY sup3 "&#179;">
+<!ENTITY supe "&#8839;">
+<!ENTITY szlig "&#223;">
+<!ENTITY Tau "&#932;">
+<!ENTITY tau "&#964;">
+<!ENTITY there4 "&#8756;">
+<!ENTITY Theta "&#920;">
+<!ENTITY theta "&#952;">
+<!ENTITY thetasym "&#977;">
+<!ENTITY thinsp "&#8201;">
+<!ENTITY THORN "&#222;">
+<!ENTITY thorn "&#254;">
+<!ENTITY tilde "&#732;">
+<!ENTITY times "&#215;">
+<!ENTITY trade "&#8482;">
+<!ENTITY Uacute "&#218;">
+<!ENTITY uacute "&#250;">
+<!ENTITY uarr "&#8593;">
+<!ENTITY uArr "&#8657;">
+<!ENTITY Ucirc "&#219;">
+<!ENTITY ucirc "&#251;">
+<!ENTITY Ugrave "&#217;">
+<!ENTITY ugrave "&#249;">
+<!ENTITY uml "&#168;">
+<!ENTITY upsih "&#978;">
+<!ENTITY Upsilon "&#933;">
+<!ENTITY upsilon "&#965;">
+<!ENTITY Uuml "&#220;">
+<!ENTITY uuml "&#252;">
+<!ENTITY weierp "&#8472;">
+<!ENTITY Xi "&#926;">
+<!ENTITY xi "&#958;">
+<!ENTITY Yacute "&#221;">
+<!ENTITY yacute "&#253;">
+<!ENTITY yen "&#165;">
+<!ENTITY Yuml "&#376;">
+<!ENTITY yuml "&#255;">
+<!ENTITY Zeta "&#918;">
+<!ENTITY zeta "&#950;">
+<!ENTITY zwj "&#8205;">
+<!ENTITY zwnj "&#8204;">`.replace(/\n/g, ' ');
+
+  /**
+   * A reasonably strict xml declaration.
+   */
+  const XML_DECL = '<?xml version="1.0" standalone="no"?>';
+
+  /**
+   * The beginning of the XML doctype declaration.
+   */
+  const DOCTYPE_START = `<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [`;
+
+  /**
+   * The end of the XML docype declaration.
+   */
+  const DOCTYPE_END = ']>';
+
+  /**
+   * A full header for an SVG XML document.
+   */
+  const SVG_XML_HEADER = `${XML_DECL}
+    ${DOCTYPE_START}${HTML_ENTITIES}${DOCTYPE_END}`;
 
     void Promise.all([...diagrams].map(renderOneMarmaid));
   });
@@ -7518,8 +7803,24 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>This notebook covers the process of acquiring and cleaning data.</p>
-<p><a href="#A.-Data-Extraction">A. Data Extraction</a><br/>
-<a href="#B.-Data-Wrangling">B. Data Wrangling</a></p>
+<p><strong>Contents:</strong></p>
+<p><a href="#A.-Data-Extraction">A. Data Extraction</a></p>
+<ul>
+<li><a href="#1.-Retrieve-Data-from-Subject-Tables">1. Retrieve Data from Subject Tables</a></li>
+<li><a href="#2.-Retrieve-Data-from-Data-Profiles-Tables">2. Retrieve Data from Data Profiles Tables</a></li>
+<li><a href="#3.-Retrieve-Data-from-Detailed-Tables">3. Retrieve Data from Detailed Tables</a></li>
+<li><a href="#4.-Save-Raw-Data-as-a-CSV-File">4. Save Raw Data as a CSV File</a></li>
+</ul>
+<p><a href="#B.-Data-Wrangling">B. Data Wrangling</a></p>
+<ul>
+<li><a href="#1.-Tidiness-Issue:-Column-Headers-are-Codes">1. Tidiness Issue: Column Headers are Codes</a></li>
+<li><a href="#2.-Quality-Issue:-Incorrect-Data-Types">2. Quality Issue: Incorrect Data Types</a></li>
+<li><a href="#3.-Quality-Issue:-Completeness-Issues">3. Quality Issue: Completeness Issues</a></li>
+<li><a href="#4.-Quality-Issue:-Inconsistency">4. Quality Issue: Inconsistency</a></li>
+<li><a href="#5.-Tidiness-Issue:-Unnecessary-Variables">5. Tidiness Issue: Unnecessary Variables</a></li>
+<li><a href="#6.-Derived-Variables">6. Derived Variables</a></li>
+<li><a href="#7.-Update-Data-Store">7. Update Data Store</a></li>
+</ul>
 </div>
 </div>
 </div>
@@ -7531,10 +7832,10 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </pre></div>
 </div>
 </div>
@@ -7558,15 +7859,13 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>The data were collected by making API requests to the U.S. Census Bureau’s ACS 2023 1-Year datasets. Information about ACS table types and variables: <a href="https://www.census.gov/data/developers/data-sets/acs-1year.html">LINK</a></p>
-<p>To construct API request URLs, we first need to identify variable codes and geographic code (ucgid) for county-level data.</p>
-<ol>
-<li>Identifying variables:</li>
-</ol>
+<p>The data were collected by making API requests to the <strong>U.S. Census Bureau’s ACS 2023 1-Year</strong> datasets. Information about ACS table types and variables: <a href="https://www.census.gov/data/developers/data-sets/acs-1year.html">LINK</a></p>
+<p>To construct API request URLs, we first need to identify <strong>variable codes</strong> and <strong>geographic code (ucgid)</strong> for county-level data.</p>
+<p><strong>1. Identifying variables:</strong></p>
 <ul>
-<li><p>Variables are gathered from 3 different types of tables: Subject Tables, Detailed Tables, Data Profiles.</p>
+<li><p>Variables are gathered from 3 different types of tables: <strong>Subject Tables</strong>, <strong>Detailed Tables</strong>, <strong>Data Profiles</strong>.</p>
 </li>
-<li><p>A variable code starts with a table ID with the first letter representing the table type: "S" for Subject Tables, "B" for Detailed Tables, "DP" for Data Profiles. For examples: S1701_C03_001E, DP03_0009PE, etc.</p>
+<li><p>A variable code starts with a table ID with the first letter representing the table type: <strong>"S"</strong> for <strong>Subject Tables</strong>, <strong>"B"</strong> for <strong>Detailed Tables</strong>, <strong>"DP"</strong> for <strong>Data Profiles</strong>. For examples: <strong>S</strong>1701_C03_001E, <strong>DP</strong>03_0009PE, etc.</p>
 </li>
 <li><p>Relevant variables were selected by browsing tables and variable labels on <a href="https://data.census.gov">https://data.census.gov</a>. Each selected variable label was then mapped to its corresponding variable code using the following variable metadata documentations:</p>
 <ul>
@@ -7575,7 +7874,7 @@ a.anchor-link {
 <li><a href="https://api.census.gov/data/2023/acs/acs1/profile/variables.html">Data Profiles</a></li>
 </ul>
 </li>
-<li><p>A more reliable way to retrieve variable code is using <a href="./retrieving_variable_codes.ipynb">retrieving_variable_codes.ipynb</a>.</p>
+<li><p>A more reliable way to look up variable code is using <a href="retrieve_variable_codes.py">retrieve_variable_codes.py</a> or <a href="./retrieving_variable_codes.ipynb">retrieving_variable_codes.ipynb</a>.</p>
 <p>Description of selected variables and corresponding variable codes:</p>
 </li>
 </ul>
@@ -7669,9 +7968,7 @@ a.anchor-link {
 </tr>
 </tbody>
 </table>
-<ol start="2">
-<li>Identifying geographic code:</li>
-</ol>
+<p><strong>2. Identifying geographic code:</strong></p>
 <ul>
 <li>Documentations for ucgid: <a href="https://www.census.gov/data/developers/guidance/api-user-guide/ucgid-predicate.html">LINK</a></li>
 <li>The ucgid that returns data for all counties within the U.S. is: <code>0100000US$0500000</code><ul>
@@ -7681,6 +7978,17 @@ a.anchor-link {
 </ul>
 </li>
 </ul>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=17608d72-f4f5-4b88-94c3-4810567784aa">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="1.-Retrieve-Data-from-Subject-Tables">1. Retrieve Data from Subject Tables<a class="anchor-link" href="#1.-Retrieve-Data-from-Subject-Tables">¶</a></h3>
 </div>
 </div>
 </div>
@@ -7813,6 +8121,17 @@ a.anchor-link {
 </div>
 </div>
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=73beed2b-7ad7-4907-a723-982199a00432">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="2.-Retrieve-Data-from-Data-Profiles-Tables">2. Retrieve Data from Data Profiles Tables<a class="anchor-link" href="#2.-Retrieve-Data-from-Data-Profiles-Tables">¶</a></h3>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=de32bc5a-bf48-40f3-a528-918d64ee366b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -7912,6 +8231,17 @@ a.anchor-link {
 </div>
 </div>
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2ef285bd-ecf0-479b-a2aa-b1ba604015e1">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="3.-Retrieve-Data-from-Detailed-Tables">3. Retrieve Data from Detailed Tables<a class="anchor-link" href="#3.-Retrieve-Data-from-Detailed-Tables">¶</a></h3>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8ee8fc5e-ac46-485e-838b-4742f278574f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -7920,7 +8250,7 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Retrieve data from Detailed Base tables</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Retrieve data from Detailed tables</span>
 <span class="n">db_col_ids</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">'NAME'</span><span class="p">,</span><span class="s1">'B19057_002E'</span><span class="p">,</span><span class="s1">'B19057_001E'</span><span class="p">,</span><span class="s1">'B25077_001E'</span><span class="p">,</span><span class="s1">'B25064_001E'</span><span class="p">])</span>
 <span class="n">url</span> <span class="o">=</span> <span class="s1">'https://api.census.gov/data/2023/acs/acs1'</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">?get=</span><span class="si">{</span><span class="n">db_col_ids</span><span class="si">}</span><span class="s1">&amp;ucgid=pseudo(0100000US$0500000)&amp;descriptive=true'</span><span class="p">)</span>
@@ -8023,6 +8353,17 @@ a.anchor-link {
 </div>
 </div>
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b08ca681-355b-46ec-bd82-16f00f280f11">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="4.-Save-Raw-Data-as-a-CSV-File">4. Save Raw Data as a CSV File<a class="anchor-link" href="#4.-Save-Raw-Data-as-a-CSV-File">¶</a></h3>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=af14f54a-39e6-4ebd-b195-d94860459119">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -8031,7 +8372,8 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">df1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Make sure all datasets have the same number of rows</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">df2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">df3</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
@@ -8062,7 +8404,8 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">df1</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Remove unwanted columns from df1 and df2</span>
+<span class="n">df1</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">df2</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -8077,7 +8420,8 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">merged_df</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df3</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Merge all 3 datasets together</span>
+<span class="n">merged_df</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df3</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">merged_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -8232,7 +8576,8 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">merged_df</span><span class="o">.</span><span class="n">shape</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Make sure the merged dataset has the same number of rows</span>
+<span class="n">merged_df</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
 </div>
@@ -8258,7 +8603,8 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">merged_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'raw_data.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Save merged dataset as a CSV file</span>
+<span class="n">merged_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'raw_data.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8296,7 +8642,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="1.-Tidiness-Issue:-Column-headers-are-codes">1. Tidiness Issue: Column headers are codes<a class="anchor-link" href="#1.-Tidiness-Issue:-Column-headers-are-codes">¶</a></h3>
+<h3 id="1.-Tidiness-Issue:-Column-Headers-are-Codes">1. Tidiness Issue: Column Headers are Codes<a class="anchor-link" href="#1.-Tidiness-Issue:-Column-Headers-are-Codes">¶</a></h3>
 </div>
 </div>
 </div>
@@ -8308,9 +8654,15 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">cleaned_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">cleaned_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Temporarily use the 1st row containing variable codes as column names</span>
+<span class="n">cleaned_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">cleaned_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># Drop the 1st row</span>
 <span class="n">cleaned_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Reset the index of the rows</span>
 <span class="n">cleaned_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># The first row now contains column labels</span>
 <span class="n">cleaned_df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -8406,7 +8758,7 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Check for the column labels</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Check for the column labels in the 1st row</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cleaned_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
     <span class="n">label</span> <span class="o">=</span> <span class="n">cleaned_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">]</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
@@ -8450,7 +8802,7 @@ ucgid: Geography
 <div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Create column names</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Create column names based on what is described in the column labels</span>
 <span class="n">col_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'county'</span><span class="p">,</span><span class="s1">'poverty_rate'</span><span class="p">,</span><span class="s1">'health_insurance'</span><span class="p">,</span><span class="s1">'median_household_income'</span><span class="p">,</span><span class="s1">'bachelor_18-24'</span><span class="p">,</span><span class="s1">'bachelor_25+'</span><span class="p">,</span><span class="s1">'population_18-24'</span><span class="p">,</span><span class="s1">'population_25+'</span><span class="p">,</span>
              <span class="s1">'unemployment_rate'</span><span class="p">,</span><span class="s1">'public_transit'</span><span class="p">,</span><span class="s1">'with_public_assistance'</span><span class="p">,</span><span class="s1">'total_households'</span><span class="p">,</span><span class="s1">'median_house_value'</span><span class="p">,</span><span class="s1">'median_gross_rent'</span><span class="p">,</span><span class="s1">'ucgid'</span><span class="p">]</span>
 
@@ -8559,7 +8911,7 @@ ucgid: Geography
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="2.-Quality-Issue:-Incorrect-data-types">2. Quality Issue: Incorrect data types<a class="anchor-link" href="#2.-Quality-Issue:-Incorrect-data-types">¶</a></h3>
+<h3 id="2.-Quality-Issue:-Incorrect-Data-Types">2. Quality Issue: Incorrect Data Types<a class="anchor-link" href="#2.-Quality-Issue:-Incorrect-Data-Types">¶</a></h3>
 </div>
 </div>
 </div>
@@ -8571,7 +8923,8 @@ ucgid: Geography
 <div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">cleaned_df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Check for each column data types</span>
+<span class="n">cleaned_df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -8584,28 +8937,28 @@ ucgid: Geography
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+<pre>&lt;class 'pandas.DataFrame'&gt;
 RangeIndex: 854 entries, 0 to 853
 Data columns (total 15 columns):
- #   Column                   Non-Null Count  Dtype 
----  ------                   --------------  ----- 
- 0   county                   854 non-null    object
- 1   poverty_rate             854 non-null    object
- 2   health_insurance         854 non-null    object
- 3   median_household_income  854 non-null    object
- 4   bachelor_18-24           854 non-null    object
- 5   bachelor_25+             854 non-null    object
- 6   population_18-24         854 non-null    object
- 7   population_25+           854 non-null    object
- 8   unemployment_rate        854 non-null    object
- 9   public_transit           854 non-null    object
- 10  with_public_assistance   854 non-null    object
- 11  total_households         854 non-null    object
- 12  median_house_value       854 non-null    object
- 13  median_gross_rent        854 non-null    object
- 14  ucgid                    854 non-null    object
-dtypes: object(15)
-memory usage: 100.2+ KB
+ #   Column                   Non-Null Count  Dtype
+---  ------                   --------------  -----
+ 0   county                   854 non-null    str  
+ 1   poverty_rate             854 non-null    str  
+ 2   health_insurance         854 non-null    str  
+ 3   median_household_income  854 non-null    str  
+ 4   bachelor_18-24           854 non-null    str  
+ 5   bachelor_25+             854 non-null    str  
+ 6   population_18-24         854 non-null    str  
+ 7   population_25+           854 non-null    str  
+ 8   unemployment_rate        854 non-null    str  
+ 9   public_transit           854 non-null    str  
+ 10  with_public_assistance   854 non-null    str  
+ 11  total_households         854 non-null    str  
+ 12  median_house_value       854 non-null    str  
+ 13  median_gross_rent        854 non-null    str  
+ 14  ucgid                    854 non-null    str  
+dtypes: str(15)
+memory usage: 100.2 KB
 </pre>
 </div>
 </div>
@@ -8654,12 +9007,12 @@ memory usage: 100.2+ KB
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+<pre>&lt;class 'pandas.DataFrame'&gt;
 RangeIndex: 854 entries, 0 to 853
 Data columns (total 15 columns):
  #   Column                   Non-Null Count  Dtype  
 ---  ------                   --------------  -----  
- 0   county                   854 non-null    object 
+ 0   county                   854 non-null    str    
  1   poverty_rate             854 non-null    float64
  2   health_insurance         854 non-null    float64
  3   median_household_income  854 non-null    int64  
@@ -8673,9 +9026,9 @@ Data columns (total 15 columns):
  11  total_households         854 non-null    int64  
  12  median_house_value       854 non-null    int64  
  13  median_gross_rent        854 non-null    int64  
- 14  ucgid                    854 non-null    object 
-dtypes: float64(4), int64(9), object(2)
-memory usage: 100.2+ KB
+ 14  ucgid                    854 non-null    str    
+dtypes: float64(4), int64(9), str(2)
+memory usage: 100.2 KB
 </pre>
 </div>
 </div>
@@ -8711,7 +9064,8 @@ memory usage: 100.2+ KB
 <div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">cleaned_df</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Check if any column has null values</span>
+<span class="n">cleaned_df</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -9889,7 +10243,7 @@ This column represents the number of people receiving public assistance.</p>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p><em><strong>Other unexpected values:</strong></em></p>
-<p>To make sure the data is consistence, I will check whether there is any values that are too big.</p>
+<p>To make sure the data is consistent, I will check whether there is any values that are too big.</p>
 </div>
 </div>
 </div>
@@ -10312,7 +10666,7 @@ dtype: object</pre>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="7.-Derived-Variable-Creation">7. Derived Variable Creation<a class="anchor-link" href="#7.-Derived-Variable-Creation">¶</a></h3>
+<h3 id="6.-Derived-Variables">6. Derived Variables<a class="anchor-link" href="#6.-Derived-Variables">¶</a></h3>
 </div>
 </div>
 </div>
@@ -10560,7 +10914,8 @@ dtype: object</pre>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [34]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">cleaned_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'cleaned_data.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Save clean_df as a CSV file</span>
+<span class="n">cleaned_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'cleaned_data.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="c1"># Check the saved CSV file</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'cleaned_data.csv'</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
