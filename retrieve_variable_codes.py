@@ -1,16 +1,9 @@
-import json
 import pandas as pd
-
-def get_metadata (json_file):
-    with open (json_file, 'r') as file:
-        metadata = json.load(file)
-    variables = metadata['variables']
-    variables = pd.DataFrame(variables).transpose().reset_index()
-    variables.rename(columns={'index':'var_code'}, inplace=True)
-    return variables
 
 def input_prompt():
     '''Prompt user to input table ID and label's components'''
+    data_year = input('Data year:')
+    acs_estimate = input('ACS estimate type (Enter 1 for 1-year estimate or 5 for 5-year estimate):')
     table_id = input('Table ID:')
     parent_col = input('Parent column:')
     child_col = input('Child column:')
@@ -22,8 +15,16 @@ def input_prompt():
     # A list of label's components
     label_components = [child_col, parent_col, parent_label, child_label_1, child_label_2, child_label_3]
 
-    return table_id, label_components
+    return data_year, acs_estimate, table_id, label_components
 
+def get_metadata (url):
+
+    metadata = pd.read_json(url)
+
+    var_dict = metadata['variables'].to_dict()
+    variables = pd.DataFrame.from_dict(var_dict, orient='index').reset_index()
+    variables.rename(columns={'index': 'var_code'}, inplace=True)
+    return variables
 
 def get_var_label(label_components):
     ''' Return variable's label by assembling user's inputs'''
@@ -40,41 +41,47 @@ def get_var_label(label_components):
 
     return var_label
 
-
-def get_var_id(table_id, label_components):
+def get_var_id(data_year, acs_estimate, table_id, label_components):
     '''Call get_var_label function to retrieve variable label.
         Validate the format of table ID and variable label.
         If the table ID and variable label are valid, look up variable code based on table ID and variable label.'''
 
-    var_label = get_var_label(label_components)
-    b_var = get_metadata('b_variables.json')
-    s_var = get_metadata('s_variables.json')
-    dp_var = get_metadata('dp_variables.json')
+    b_var_url = f'https://api.census.gov/data/{data_year}/acs/acs{acs_estimate}/variables.json'
+    s_var_url = f'https://api.census.gov/data/{data_year}/acs/acs{acs_estimate}/subject/variables.json'
+    dp_var_url = f'https://api.census.gov/data/{data_year}/acs/acs{acs_estimate}/profile/variables.json'
 
-    result = pd.DataFrame()
+    b_var = get_metadata(b_var_url)
+    s_var = get_metadata(s_var_url)
+    dp_var = get_metadata(dp_var_url)
+
+    var_label = get_var_label(label_components)
 
     if not table_id or not table_id.lower().startswith(('b', 's', 'dp')) or var_label is None:
         raise ValueError('Invalid inputs!')
-    else:
-        if table_id.lower().startswith('b'):
-            result = b_var.loc[
-                (b_var['group'].str.contains(table_id, case=False)) & (b_var['label'].str.lower() == var_label.lower())]
-        elif table_id.lower().startswith('s'):
-            result = s_var.loc[
-                (s_var['group'].str.contains(table_id, case=False)) & (s_var['label'].str.lower() == var_label.lower())]
-        elif table_id.lower().startswith('dp'):
-            result = dp_var.loc[
-                (dp_var['group'].str.contains(table_id, case=False)) & (dp_var['label'].str.lower() == var_label.lower())]
 
-        print(f'Table: {result["group"].values[0]}')
-        print(f'Variable label: {result["label"].values[0]}')
-        print(f'Variable code: {result["var_code"].values[0]}')
+    # Assign target DataFrame based on table prefix
+    result = pd.DataFrame()
+    if table_id.lower().startswith('b'):
+        result = b_var
+    elif table_id.lower().startswith('s'):
+        result = s_var
+    elif table_id.lower().startswith('dp'):
+        result = dp_var
+
+    for component in label_components:
+        if component.strip() != '':
+            result = result.loc[(result['group'].str.contains(table_id, case=False, na=False))
+                                & (result['label'].str.lower() == var_label.lower())]
+
+    print(f'\nTable: {result["group"].values[0]}')
+    print(f'Variable label: {result["label"].values[0]}')
+    print(f'Variable code: {result["var_code"].values[0]}')
 
 
 if __name__ == '__main__':
     try:
-        table, components = input_prompt()
-        get_var_id(table, components)
+        year, estimate, table, components = input_prompt()
+        get_var_id(year, estimate, table, components)
     except ValueError as excpt:
         print(excpt)
     except Exception as excpt:
